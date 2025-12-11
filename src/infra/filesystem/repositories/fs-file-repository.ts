@@ -74,7 +74,7 @@ export class FsFileRepository implements FileRepository {
 
     await fs.writeFile(filePath, content, "utf-8");
 
-    return await this.loadFile(projectName, fileName);
+    return content;
   }
 
   /**
@@ -98,6 +98,6 @@ export class FsFileRepository implements FileRepository {
 
     await fs.writeFile(filePath, content, "utf-8");
 
-    return await this.loadFile(projectName, fileName);
+    return content;
   }
 }

@@ -40,13 +40,12 @@ describe("FsProjectRepository", () => {
   });
 
   describe("projectExists", () => {
-    it("should throw an error when project path cannot be accessed", async () => {
-      // We now let errors propagate, so stat errors will throw
+    it("should return false when project path does not exist", async () => {
       const nonExistentProject = "non-existent-project";
 
-      await expect(
-        repository.projectExists(nonExistentProject)
-      ).rejects.toThrow();
+      const result = await repository.projectExists(nonExistentProject);
+
+      expect(result).toBe(false);
     });
 
     it("should return true when project exists", async () => {

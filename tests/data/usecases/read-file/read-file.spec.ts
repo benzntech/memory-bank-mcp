@@ -19,8 +19,8 @@ describe("ReadFile UseCase", () => {
     sut = new ReadFile(fileRepositoryStub, projectRepositoryStub);
   });
 
-  test("should call ProjectRepository.projectExists with correct projectName", async () => {
-    const projectExistsSpy = vi.spyOn(projectRepositoryStub, "projectExists");
+  test("should call FileRepository.loadFile directly without checking project existence", async () => {
+    const loadFileSpy = vi.spyOn(fileRepositoryStub, "loadFile");
     const params: ReadFileParams = {
       projectName: "project-1",
       fileName: "file1.md",
@@ -28,13 +28,11 @@ describe("ReadFile UseCase", () => {
 
     await sut.readFile(params);
 
-    expect(projectExistsSpy).toHaveBeenCalledWith("project-1");
+    expect(loadFileSpy).toHaveBeenCalledWith("project-1", "file1.md");
   });
 
-  test("should return null if project does not exist", async () => {
-    vi.spyOn(projectRepositoryStub, "projectExists").mockResolvedValueOnce(
-      false
-    );
+  test("should return null if file or project does not exist", async () => {
+    vi.spyOn(fileRepositoryStub, "loadFile").mockResolvedValueOnce(null);
     const params: ReadFileParams = {
       projectName: "non-existent-project",
       fileName: "file1.md",
@@ -82,9 +80,7 @@ describe("ReadFile UseCase", () => {
 
   test("should propagate errors if repository throws", async () => {
     const error = new Error("Repository error");
-    vi.spyOn(projectRepositoryStub, "projectExists").mockRejectedValueOnce(
-      error
-    );
+    vi.spyOn(fileRepositoryStub, "loadFile").mockRejectedValueOnce(error);
     const params: ReadFileParams = {
       projectName: "project-1",
       fileName: "file1.md",

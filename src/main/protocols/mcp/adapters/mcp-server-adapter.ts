@@ -7,6 +7,7 @@ import {
   McpError,
   ServerResult as MCPResponse,
 } from "@modelcontextprotocol/sdk/types.js";
+import { Logger } from "../../../utils/logger.js";
 import { McpRouterAdapter } from "./mcp-router-adapter.js";
 
 export class McpServerAdapter {
@@ -55,9 +56,10 @@ export class McpServerAdapter {
     const transport = new StdioServerTransport();
     try {
       await this.server.connect(transport);
-      console.log("Memory Bank MCP server running on stdio");
+      Logger.info("Memory Bank MCP server running on stdio");
     } catch (error) {
-      console.error(error);
+      Logger.error("Failed to start MCP server", error as Error);
+      throw error;
     }
   }
 }

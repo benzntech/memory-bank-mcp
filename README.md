@@ -1,8 +1,8 @@
 # Memory Bank MCP Server
 
 [![smithery badge](https://smithery.ai/badge/@alioshr/memory-bank-mcp)](https://smithery.ai/server/@alioshr/memory-bank-mcp)
-[![npm version](https://badge.fury.io/js/%40allpepper%2Fmemory-bank-mcp.svg)](https://www.npmjs.com/package/@allpepper/memory-bank-mcp)
-[![npm downloads](https://img.shields.io/npm/dm/@allpepper/memory-bank-mcp.svg)](https://www.npmjs.com/package/@allpepper/memory-bank-mcp)
+[![npm version](https://badge.fury.io/js/memory-bank-mcp.svg)](https://www.npmjs.com/package/memory-bank-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/memory-bank-mcp.svg)](https://www.npmjs.com/package/memory-bank-mcp)
 
 <a href="https://glama.ai/mcp/servers/ir18x1tixp"><img width="380" height="200" src="https://glama.ai/mcp/servers/ir18x1tixp/badge" alt="Memory Bank Server MCP server" /></a>
 
@@ -43,10 +43,36 @@ The Memory Bank MCP Server transforms traditional file-based memory banks into a
 
 ## Installation
 
+### Option 1: Local Installation (Recommended for Development)
+
+Clone the repository and install globally:
+
+```bash
+# Clone the repository
+git clone https://github.com/alioshr/memory-bank-mcp.git
+cd memory-bank-mcp
+
+# Install dependencies and build
+npm install
+
+# Link globally
+npm link
+```
+
+This will make the `mcp-server-memory-bank` command available globally on your system.
+
+### Option 2: Via Smithery
+
 To install Memory Bank Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@alioshr/memory-bank-mcp):
 
 ```bash
 npx -y @smithery/cli install @alioshr/memory-bank-mcp --client claude
+```
+
+### Option 3: Via NPM
+
+```bash
+npm install -g memory-bank-mcp
 ```
 
 This will set up the MCP server configuration automatically. Alternatively, you can configure the server manually as described in the Configuration section below.
@@ -67,9 +93,31 @@ Add the following configuration to your MCP settings:
 
 ```json
 {
-  "allpepper-memory-bank": {
+  "memory-bank": {
+    "command": "mcp-server-memory-bank",
+    "args": [],
+    "env": {
+      "MEMORY_BANK_ROOT": "<path-to-bank>"
+    },
+    "disabled": false,
+    "autoApprove": [
+      "memory_bank_read",
+      "memory_bank_write",
+      "memory_bank_update",
+      "list_projects",
+      "list_project_files"
+    ]
+  }
+}
+```
+
+Or if using npx:
+
+```json
+{
+  "memory-bank": {
     "command": "npx",
-    "args": ["-y", "@allpepper/memory-bank-mcp"],
+    "args": ["-y", "memory-bank-mcp"],
     "env": {
       "MEMORY_BANK_ROOT": "<path-to-bank>"
     },
@@ -101,7 +149,13 @@ Add the following configuration to your MCP settings:
 For Cursor, open the settings -> features -> add MCP server -> add the following:
 
 ```shell
-env MEMORY_BANK_ROOT=<path-to-bank> npx -y @allpepper/memory-bank-mcp@latest
+env MEMORY_BANK_ROOT=<path-to-bank> mcp-server-memory-bank
+```
+
+Or if using npx:
+
+```shell
+env MEMORY_BANK_ROOT=<path-to-bank> npx -y memory-bank-mcp
 ```
 ## Using with Claude
 
@@ -109,21 +163,34 @@ env MEMORY_BANK_ROOT=<path-to-bank> npx -y @allpepper/memory-bank-mcp@latest
 - Claude Code config file:  `~/.claude.json`
 
 1. Locate the config file
-3. Locate the property called `mcpServers`
-4. Paste this:
+2. Locate the property called `mcpServers`
+3. Paste this:
 
+```json
+"memory-bank": {
+  "type": "stdio",
+  "command": "mcp-server-memory-bank",
+  "args": [],
+  "env": {
+    "MEMORY_BANK_ROOT": "/path/to/memory-bank"
+  }
+}
 ```
- "allPepper-memory-bank": {
-          "type": "stdio",
-          "command": "npx",
-          "args": [
-            "-y",
-            "@allpepper/memory-bank-mcp@latest"
-          ],
-          "env": {
-            "MEMORY_BANK_ROOT": "YOUR PATH"
-          }
-        }
+
+Or if using npx:
+
+```json
+"memory-bank": {
+  "type": "stdio",
+  "command": "npx",
+  "args": [
+    "-y",
+    "memory-bank-mcp"
+  ],
+  "env": {
+    "MEMORY_BANK_ROOT": "/path/to/memory-bank"
+  }
+}
 ```
 
 ## Custom AI instructions
@@ -173,13 +240,13 @@ npm run dev
 3. Add MCP configuration, example for Roo Code:
 
     ```json
-    "allpepper-memory-bank": {
+    "memory-bank": {
       "command": "docker",
       "args": [
         "run", "-i", "--rm",
-        "-e", 
+        "-e",
         "MEMORY_BANK_ROOT",
-        "-v", 
+        "-v",
         "/path/to/memory-bank:/mnt/memory_bank",
         "memory-bank-mcp:local"
       ],

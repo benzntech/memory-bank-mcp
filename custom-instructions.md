@@ -1,174 +1,83 @@
-# Memory Bank via MCP
+memory_system_rules:
+  primary_system: "memory-bank"
+  
+initialization:
+  trigger: "first_interaction"
+  priority: "immediate"
+  required: true
+  actions:
+    - "Before doing ANYTHING else, read and fully internalize ALL rules in this file."
+    - "Check if memory-bank/ directory exists."
+    - "If memory-bank exists: Read all core files (productContext.md, activeContext.md, systemPatterns.md, decisionLog.md, progress.md). Set status to [MEMORY BANK: ACTIVE]."
+    - "If memory-bank does NOT exist: Inform user. Ask to create and provide yes and no response choices. If yes, create directory and core files with basic structure and populate files with initial content, based upon any available information. If no, set status to [MEMORY BANK: INACTIVE]."
+    - "Load context from memory-bank files if active."
+    - "Proceed with task or if no task is given, suggest 2-4 tasks based upon memory-bank/ content."
 
-I'm an expert engineer whose memory resets between sessions. I rely ENTIRELY on my Memory Bank, accessed via MCP tools, and MUST read ALL memory bank files before EVERY task.
+  validation:
+    - "Verify memory-bank status (ACTIVE/INACTIVE)."
+    - "If ACTIVE, confirm core files were read."
 
-## Key Commands
+system_validation:
+  startup:
+    - "Check memory-bank accessibility if expected"
+    - "Confirm initialization sequence complete"
 
-1. "follow your custom instructions"
+memory_bank:
+  core_files:
+    activeContext.md:
+      purpose: "Track session state and goals (objectives, decisions, questions, blockers)"
+    productContext.md:
+      purpose: "Define project scope (overview, components, organization, standards)"
+    progress.md:
+      purpose: "Track work status (completed, current, next, issues)"
+    decisionLog.md:
+      purpose: "Record decisions (technical, architecture, implementation, alternatives)"
+    systemPatterns.md: # Optional but recommended
+      purpose: "Document recurring patterns and standards (coding, architecture, testing)"
+  file_handling:
+    read_all_at_startup: true # Implied by initialization actions
+    build_complete_context: true # Implied by initialization actions
 
-   - Triggers Pre-Flight Validation (\*a)
-   - Follows Memory Bank Access Pattern (\*f)
-   - Executes appropriate Mode flow (Plan/Act)
+general:
+  status_prefix: "Begin EVERY response with either '[MEMORY BANK: ACTIVE]' or '[MEMORY BANK: INACTIVE]', according to the current state of the Memory Bank."
 
-2. "initialize memory bank"
+memory_bank_updates:
+  frequency: "UPDATE MEMORY BANK THROUGHOUT THE CHAT SESSION, WHEN SIGNIFICANT CHANGES OCCUR IN THE PROJECT. Use judgment to determine significance."
+  decisionLog.md:
+    trigger: "When a significant architectural decision is made (new component, data flow change, technology choice, etc.)."
+    action: "Append new information (decision, rationale, implications) using insert_content. Never overwrite. Include timestamp."
+    format: "[YYYY-MM-DD HH:MM:SS] - [Summary of Decision]"
+  productContext.md:
+    trigger: "When the high-level project description, goals, features, or overall architecture changes significantly."
+    action: "Append new information or modify existing entries using insert_content or apply_diff. Append timestamp and summary as footnote."
+    format: "[YYYY-MM-DD HH:MM:SS] - [Summary of Change]"
+  systemPatterns.md:
+    trigger: "When new architectural patterns are introduced or existing ones are modified."
+    action: "Append new patterns or modify existing entries using insert_content or apply_diff. Include timestamp."
+    format: "[YYYY-MM-DD HH:MM:SS] - [Description of Pattern/Change]"
+  activeContext.md:
+    trigger: "When the current focus of work changes, or when significant progress is made."
+    action: "Append to the relevant section (Current Focus, Recent Changes, Open Questions/Issues) or modify existing entries using insert_content or apply_diff. Include timestamp."
+    format: "[YYYY-MM-DD HH:MM:SS] - [Summary of Change/Focus/Issue]"
+  progress.md:
+    trigger: "When a task begins, is completed, or its status changes."
+    action: "Append the new entry using insert_content. Never overwrite. Include timestamp."
+    format: "[YYYY-MM-DD HH:MM:SS] - [Summary of Progress Update]"
 
-   - Follows Pre-Flight Validation (\*a)
-   - Creates new project if needed
-   - Establishes core files structure (\*f)
+umb: # Update Memory Bank command
+  trigger: "^(Update Memory Bank|UMB)$"
+  instructions:
+    - "Halt Current Task: Stop current activity."
+    - "Acknowledge Command: Respond with '[MEMORY BANK: UPDATING]'."
+    - "Review Chat History: Analyze the complete current chat session."
+  core_update_process: |
+      1. Current Session Review: Analyze chat history for relevant decisions, context changes, progress updates, clarifications etc.
+      2. Comprehensive Updates: Update relevant memory bank files based on the review, following the rules defined in 'memory_bank_updates'.
+      3. Memory Bank Synchronization: Ensure consistency across updated files.
 
-3. "update memory bank"
-   - Triggers Documentation Updates (\*d)
-   - Performs full file re-read
-   - Updates based on current state
-
-## Memory Bank lyfe cycle:
-
-```mermaid
-flowchart TD
-    A[Start] --> B["Pre-Flight Validation (*a)"]
-    B --> C{Project Exists?}
-    C -->|Yes| D[Check Core Files]
-    C -->|No| E[Create Project] --> H[Create Missing Files]
-
-    D --> F{All Files Present?}
-    F -->|Yes| G["Access Memory Bank (*f)"]
-    F -->|No| H[Create Missing Files]
-
-    H --> G
-    G --> I["Plan Mode (*b)"]
-    G --> J["Act Mode (*c)"]
-
-    I --> K[List Projects]
-    K --> L[Select Context]
-    L --> M[Develop Strategy]
-
-    J --> N[Read .clinerules]
-    N --> O[Execute Task]
-    O --> P["Update Documentation (*d)"]
-
-    P --> Q{Update Needed?}
-    Q -->|Patterns/Changes| R[Read All Files]
-    Q -->|User Request| R
-    R --> S[Update Memory Bank]
-
-    S --> T["Learning Process (*e)"]
-    T --> U[Identify Patterns]
-    U --> V[Validate with User]
-    V --> W[Update .clinerules]
-    W --> X[Apply Patterns]
-    X --> O
-
-    %% Intelligence Connections
-    W -.->|Continuous Learning| N
-    X -.->|Informed Execution| O
-```
-
-## Phase Index & Requirements
-
-a) **Pre-Flight Validation**
-
-- **Triggers:** Automatic before any operation
-- **Checks:**
-  - Project directory existence
-  - Core files presence (projectbrief.md, productContext.md, etc.)
-  - Custom documentation inventory
-
-b) **Plan Mode**
-
-- **Inputs:** Filesystem/list_directory results
-- **Outputs:** Strategy documented in activeContext.md
-- **Format Rules:** Validate paths with forward slashes
-
-c) **Act Mode**
-
-- **JSON Operations:**
-  ```json
-  {
-    "projectName": "project-id",
-    "fileName": "progress.md",
-    "content": "Escaped\\ncontent"
-  }
-  ```
-- **Requirements:**
-  - Use \\n for newlines
-  - Pure JSON (no XML)
-  - Boolean values lowercase (true/false)
-
-d) **Documentation Updates**
-
-- **Triggers:**
-  - ≥25% code impact changes
-  - New pattern discovery
-  - User request "update memory bank"
-  - Context ambiguity detected
-- **Process:** Full file re-read before update
-
-e) **Project Intelligence**
-
-- **.clinerules Requirements:**
-  - Capture critical implementation paths
-  - Document user workflow preferences
-  - Track tool usage patterns
-  - Record project-specific decisions
-- **Cycle:** Continuous validate → update → apply
-
-f) **Memory Bank Structure**
-
-```mermaid
-flowchart TD
-    PB[projectbrief.md\nCore requirements/goals] --> PC[productContext.md\nProblem context/solutions]
-    PB --> SP[systemPatterns.md\nArchitecture/patterns]
-    PB --> TC[techContext.md\nTech stack/setup]
-
-    PC --> AC[activeContext.md\nCurrent focus/decisions]
-    SP --> AC
-    TC --> AC
-
-    AC --> P[progress.md\nStatus/roadmap]
-
-    %% Custom files section
-    subgraph CF[Custom Files]
-        CF1[features/*.md\nFeature specs]
-        CF2[api/*.md\nAPI documentation]
-        CF3[deployment/*.md\nDeployment guides]
-    end
-
-    %% Connect custom files to main structure
-    AC -.-> CF
-    CF -.-> P
-
-    style PB fill:#e066ff,stroke:#333,stroke-width:2px
-    style AC fill:#4d94ff,stroke:#333,stroke-width:2px
-    style P fill:#2eb82e,stroke:#333,stroke-width:2px
-    style CF fill:#fff,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
-    style CF1 fill:#fff,stroke:#333
-    style CF2 fill:#fff,stroke:#333
-    style CF3 fill:#fff,stroke:#333
-```
-
-- **File Relationships:**
-  - projectbrief.md feeds into all context files
-  - All context files inform activeContext.md
-  - progress.md tracks implementation based on active context
-- **Color Coding:**
-  - Purple: Foundation documents
-  - Blue: Active work documents
-  - Green: Status tracking
-  - Dashed: Custom documentation (flexible/optional)
-- **Access Pattern:**
-
-  - Always read in hierarchical order
-  - Update in reverse order (progress → active → others)
-  - .clinerules accessed throughout process
-  - Custom files integrated based on project needs
-
-- **Custom Files:**
-  - Can be added when specific documentation needs arise
-  - Common examples:
-    - Feature specifications
-    - API documentation
-    - Integration guides
-    - Testing strategies
-    - Deployment procedures
-  - Should follow main structure's naming patterns
-  - Must be referenced in activeContext.md when added
+  task_focus: "During UMB, focus ONLY on capturing information explicitly present in the *current chat session* (clarifications, decisions, progress). Do NOT summarize the entire project or perform actions outside this scope."
+  cross_mode_updates: "Capture relevant information from the chat session irrespective of conceptual 'modes' mentioned, adding it to the appropriate Memory Bank files."
+  
+  post_umb_actions:
+    - "State: Memory Bank fully synchronized based on current chat session."
+    - "State: Session context preserved for continuation."

@@ -42,10 +42,13 @@ export class FsProjectRepository implements ProjectRepository {
    * @returns True if the project exists, false otherwise
    */
   async projectExists(name: string): Promise<boolean> {
-    const projectPath = this.buildProjectPath(name);
-    // If path doesn't exist, fs.stat will throw an error which will propagate
-    const stat = await fs.stat(projectPath);
-    return stat.isDirectory();
+    try {
+      const projectPath = this.buildProjectPath(name);
+      const stat = await fs.stat(projectPath);
+      return stat.isDirectory();
+    } catch {
+      return false;
+    }
   }
 
   /**

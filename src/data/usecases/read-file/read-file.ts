@@ -14,13 +14,7 @@ export class ReadFile implements ReadFileUseCase {
   async readFile(params: ReadFileParams): Promise<string | null> {
     const { projectName, fileName } = params;
 
-    const projectExists = await this.projectRepository.projectExists(
-      projectName
-    );
-    if (!projectExists) {
-      return null;
-    }
-
+    // No need to check project existence separately - loadFile will return null if file doesn't exist
     return this.fileRepository.loadFile(projectName, fileName);
   }
 }
