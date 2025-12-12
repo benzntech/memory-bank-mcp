@@ -36,7 +36,7 @@ export class McpServerAdapter {
       CallToolRequestSchema,
       async (request): Promise<MCPResponse> => {
         const { name } = request.params;
-        const handler = await this.mcpRouter.getToolHandler(name);
+        const handler = this.mcpRouter.getToolHandler(name);
         if (!handler) {
           throw new McpError(
             ErrorCode.MethodNotFound,

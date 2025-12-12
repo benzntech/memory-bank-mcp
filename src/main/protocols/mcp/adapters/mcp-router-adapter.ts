@@ -8,7 +8,7 @@ export type MCPRequestHandler = (request: MCPRequest) => Promise<MCPResponse>;
 
 export type MCPRoute = {
   schema: Tool;
-  handler: Promise<MCPRequestHandler>;
+  handler: MCPRequestHandler;
 };
 
 export class McpRouterAdapter {

@@ -8,8 +8,8 @@ import { MCPRequestHandler } from "./mcp-router-adapter.js";
 
 export const adaptMcpRequestHandler = <T extends any, R extends Error | any>(
   controller: Controller<T, R>
-): Promise<MCPRequestHandler> => {
-  return Promise.resolve(async (request: MCPRequest): Promise<MCPResponse> => {
+): MCPRequestHandler => {
+  return async (request: MCPRequest): Promise<MCPResponse> => {
     const { params } = request;
     const body = params?.arguments as T;
     const response = await controller.handle({
@@ -38,5 +38,5 @@ export const adaptMcpRequestHandler = <T extends any, R extends Error | any>(
         },
       ],
     };
-  });
+  };
 };
