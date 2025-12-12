@@ -1,6 +1,7 @@
 /**
  * Simple logging utility for the MCP server
- * All output goes to stderr to avoid polluting stdout which is reserved for JSON-RPC protocol
+ * All logging is suppressed for MCP servers per spec:
+ * https://modelcontextprotocol.io/docs/develop/build-server#logging-in-mcp-servers
  */
 export class Logger {
   private static formatMessage(level: string, message: string): string {
@@ -9,23 +10,18 @@ export class Logger {
   }
 
   static info(message: string): void {
-    process.stderr.write(this.formatMessage("INFO", message) + "\n");
+    // Silenced - logging must not go to stdout or stderr during normal operation
   }
 
   static error(message: string, error?: Error): void {
-    process.stderr.write(this.formatMessage("ERROR", message) + "\n");
-    if (error) {
-      process.stderr.write("Stack trace: " + error.stack + "\n");
-    }
+    // Silenced - logging must not go to stdout or stderr during normal operation
   }
 
   static warn(message: string): void {
-    process.stderr.write(this.formatMessage("WARN", message) + "\n");
+    // Silenced - logging must not go to stdout or stderr during normal operation
   }
 
   static debug(message: string): void {
-    if (process.env.DEBUG === "true") {
-      process.stderr.write(this.formatMessage("DEBUG", message) + "\n");
-    }
+    // Silenced - logging must not go to stdout or stderr during normal operation
   }
 }
