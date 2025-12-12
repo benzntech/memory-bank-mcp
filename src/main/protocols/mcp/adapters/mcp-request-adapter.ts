@@ -6,13 +6,10 @@ import { Controller } from "../../../../presentation/protocols/controller.js";
 import { serializeError } from "../helpers/serialize-error.js";
 import { MCPRequestHandler } from "./mcp-router-adapter.js";
 
-export const adaptMcpRequestHandler = async <
-  T extends any,
-  R extends Error | any
->(
+export const adaptMcpRequestHandler = <T extends any, R extends Error | any>(
   controller: Controller<T, R>
 ): Promise<MCPRequestHandler> => {
-  return async (request: MCPRequest): Promise<MCPResponse> => {
+  return Promise.resolve(async (request: MCPRequest): Promise<MCPResponse> => {
     const { params } = request;
     const body = params?.arguments as T;
     const response = await controller.handle({
@@ -21,17 +18,25 @@ export const adaptMcpRequestHandler = async <
 
     const isError = response.statusCode < 200 || response.statusCode >= 300;
 
+    if (isError) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(serializeError(response.body)),
+          },
+        ],
+        isError: true,
+      };
+    }
+
     return {
-      tools: [],
-      isError,
       content: [
         {
           type: "text",
-          text: isError
-            ? JSON.stringify(serializeError(response.body))
-            : response.body?.toString(),
+          text: JSON.stringify(response.body),
         },
       ],
     };
-  };
+  });
 };
